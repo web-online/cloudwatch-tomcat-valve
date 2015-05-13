@@ -29,3 +29,9 @@ timeUnit                      | One of *DAYS*, *HOURS*, *MICROSECONDS*, *MILLISE
 To install, the appropriate jar from the *target* folder should be placed in the $CATALINA_HOME/lib directory. If the *-with-dependencies* jar is used no other jars should be necessary. If the standalone jar is used then the relavant dependent jars will also need to be installed.
 
 Once the jar(s) are installed, the server.xml file should be edited as in the Example above, optionally including any of the attributes to customize the behavior.
+
+Additionally, this implementation makes use of the [AWS SDK for Java](http://aws.amazon.com/sdk-for-java/) to look up the AutoScalingGroupName and to push metrics to CloudWatch. The [DefaultAWSCredentialsProviderChain](http://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/auth/DefaultAWSCredentialsProviderChain.html) is used for authentication which looks for credentials in this order:
+- Environment Variables - AWS_ACCESS_KEY_ID and AWS_SECRET_KEY
+- Java System Properties - aws.accessKeyId and aws.secretKey
+- Credential profiles file at the default location (~/.aws/credentials) shared by all AWS SDKs and the AWS CLI
+- Instance profile credentials delivered through the Amazon EC2 metadata service ([more info](http://docs.aws.amazon.com/AWSSdkDocsJava/latest/DeveloperGuide/java-dg-roles.html))
