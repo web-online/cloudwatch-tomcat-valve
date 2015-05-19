@@ -78,7 +78,7 @@ Logging is dependent on the tomcat configuration, but here is an example of a lo
 
 Here are some reasons things might not be working and suggestions for figuring out what's wrong:
 - Recieved error "Unable to load AWS credentials from any provider in the chain"
-  - See (Credentials)[#credentials] about how the DefaultAWSCredentialsProviderChain works
+  - See [Credentials](#credentials) about how the DefaultAWSCredentialsProviderChain works
 - Entry in logs says "ElapsedTimeAggregator ... scheduled to run" but no other output
   - Try enabling more verbose logging. See [Logging](#logging)
 - Entry in logs says "not authorized to perform: cloudwatch:PutMetricData" after enabling DEBUG logging on the AWS SDK libraries
