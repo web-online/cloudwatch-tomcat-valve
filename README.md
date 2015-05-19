@@ -41,11 +41,19 @@ To install, the appropriate jar from the *target* folder should be placed in the
 
 Once the jar(s) are installed, the server.xml file should be edited as in the Example above, optionally including any of the attributes to customize the behavior.
 
-Additionally, this implementation makes use of the [AWS SDK for Java](http://aws.amazon.com/sdk-for-java/) to look up the AutoScalingGroupName and to push metrics to CloudWatch. The [DefaultAWSCredentialsProviderChain](http://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/auth/DefaultAWSCredentialsProviderChain.html) is used for authentication which looks for credentials in this order:
+#### Credentials
+
+This implementation makes use of the [AWS SDK for Java](http://aws.amazon.com/sdk-for-java/) to look up the AutoScalingGroupName and to push metrics to CloudWatch. The [DefaultAWSCredentialsProviderChain](http://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/auth/DefaultAWSCredentialsProviderChain.html) is used for authentication which looks for credentials in this order:
 - Environment Variables - AWS_ACCESS_KEY_ID and AWS_SECRET_KEY
 - Java System Properties - aws.accessKeyId and aws.secretKey
 - Credential profiles file at the default location (~/.aws/credentials) shared by all AWS SDKs and the AWS CLI
 - Instance profile credentials delivered through the Amazon EC2 metadata service ([more info](http://docs.aws.amazon.com/AWSSdkDocsJava/latest/DeveloperGuide/java-dg-roles.html))
+
+##### Actions
+
+The credentials used for authentication must be able to perform the following actions:
+- ec2:DescribeTags
+- cloudwatch:PutMetricData
 
 
 ### Logging
@@ -70,8 +78,8 @@ Logging is dependent on the tomcat configuration, but here is an example of a lo
 
 Here are some reasons things might not be working and suggestions for figuring out what's wrong:
 - Recieved error "Unable to load AWS credentials from any provider in the chain"
-  - See above about how the DefaultAWSCredentialsProviderChain works
+  - See (Credentials)[#credentials] about how the DefaultAWSCredentialsProviderChain works
 - Entry in logs says "ElapsedTimeAggregator ... scheduled to run" but no other output
-  - Try enabling more verbose logging (see above)
+  - Try enabling more verbose logging. See [Logging](#logging)
 - Entry in logs says "not authorized to perform: cloudwatch:PutMetricData" after enabling DEBUG logging on the AWS SDK libraries
-  - The credentials being used are not authorized to push metrics to CloudWatch
+  - The credentials being used are not authorized to push metrics to CloudWatch. See [Actions](#actions)
