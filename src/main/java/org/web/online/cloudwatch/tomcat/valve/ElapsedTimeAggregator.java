@@ -33,6 +33,7 @@ import com.amazonaws.services.ec2.model.TagDescription;
 import com.amazonaws.util.EC2MetadataUtils;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import org.apache.juli.logging.Log;
 import org.apache.juli.logging.LogFactory;
 
@@ -89,6 +90,8 @@ public class ElapsedTimeAggregator implements Runnable {
      * region
      */
     private final Region region;
+
+    private final ConcurrentLinkedQueue<Double> values = new ConcurrentLinkedQueue<Double>();
 
     /**
      * Construct the instance querying EC2 meta data to get the InstanceId
@@ -202,6 +205,32 @@ public class ElapsedTimeAggregator implements Runnable {
         PutMetricDataRequest localPutMetricDataRequest = zeroValuePutMetricDataRequest;
         MetricDatum metricDatum = localPutMetricDataRequest.getMetricData().get(0);
 
+        if (values.peek() != null) {
+            localPutMetricDataRequest = putMetricDataRequest;
+            metricDatum = localPutMetricDataRequest.getMetricData().get(0);
+            StatisticSet statisticSet = metricDatum.getStatisticValues();
+            double _maximum = Double.MIN_VALUE;
+            double _minimum = Double.MAX_VALUE;
+            double _sampleCount = 0;
+            double _sum = 0;
+            Double value = values.poll();
+            while (value != null) {
+                if (value < _minimum) {
+                    _minimum = value;
+                }
+                if (value > _maximum) {
+                    _maximum = value;
+                }
+                _sampleCount++;
+                _sum += value;
+                value = values.poll();
+            }
+            statisticSet.setMaximum(_maximum);
+            statisticSet.setMinimum(_minimum);
+            statisticSet.setSampleCount(_sampleCount);
+            statisticSet.setSum(_sum);
+        }
+
         if (sampleCount > 0) {
             localPutMetricDataRequest = putMetricDataRequest;
             metricDatum = localPutMetricDataRequest.getMetricData().get(0);
@@ -226,6 +255,10 @@ public class ElapsedTimeAggregator implements Runnable {
         }
 
         cloudWatchClient.putMetricData(localPutMetricDataRequest);
+    }
+
+    public void offer(double value) {
+        values.offer(value);
     }
 
     /**
